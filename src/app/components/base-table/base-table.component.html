@@ -1,0 +1,50 @@
+<div>
+  <ng-content select="[filter]"></ng-content>
+
+  <table mat-table matSort [dataSource]="dataSource">
+    <!-- Position Column -->
+    @for (item of defColumns(); track item.ref) {
+      <ng-container [matColumnDef]="item.ref">
+        @if (item.sortable) {
+          <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="getColumnWidth(item)"> {{ item.name }} </th>
+        }
+        @else {
+          <th mat-header-cell *matHeaderCellDef [style.width]="getColumnWidth(item)"> {{ item.name }} </th>
+        }
+
+        @if(item.component) {
+          <td mat-cell>
+            <ng-container #dynamicComponentContainer>{{ createDynamicComponent(item.component) }}
+            </ng-container>
+          </td>
+        }
+        @else {
+          <td mat-cell *matCellDef="let element"> {{ element[item.ref] }} </td>
+        }
+      </ng-container>
+    }
+
+    <!-- Name Column -->
+    <tr mat-header-row *matHeaderRowDef="columnRef"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: columnRef;"
+      (click)="onClick(row)"
+      [class.row-clickable]="clickable()"
+    ></tr>
+  </table>
+
+  @if (enablePagination()) {
+    <mat-paginator
+      (page)="onPageChange($event)"
+      [pageSizeOptions]="pageSizeOptions()"
+      [showFirstLastButtons]="showFirstLastButtons()"
+      [hidePageSize]="hidePageSize()"
+      [disabled]="disabled()"
+      [length]="length()"
+      [pageSize]="pageSize()"
+      aria-label="Select page"
+    >
+    </mat-paginator>
+  }
+</div>
