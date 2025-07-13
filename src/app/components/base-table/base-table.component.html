@@ -1,11 +1,12 @@
 <div>
-  <ng-content select="[filter]"></ng-content>
+  <ng-content select="[extend]"></ng-content>
 
   <table mat-table matSort [dataSource]="dataSource">
     <!-- Position Column -->
     @for (item of defColumns(); track item.ref) {
       <ng-container [matColumnDef]="item.ref">
-        @if (item.sortable) {
+        <!-- Show sort header -->
+        @if (item.sortable && !item.component) {
           <th
             mat-header-cell
             *matHeaderCellDef
@@ -24,11 +25,10 @@
           </th>
         }
 
+        <!-- Show cell content -->
         @if (item.component) {
-          <td mat-cell>
-            <ng-container #dynamicComponentContainer
-              >{{ createDynamicComponent(item.component) }}
-            </ng-container>
+          <td mat-cell *matCellDef="let element">
+            <ng-container #dynamicComponentContainer></ng-container>
           </td>
         } @else {
           <td mat-cell *matCellDef="let element">{{ element[item.ref] }}</td>

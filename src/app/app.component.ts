@@ -14,6 +14,12 @@ const COLUMNS: ITableColumn[] = [
   { name: 'ID', ref: 'id', width: '4rem' },
   { name: 'Name', ref: 'name', sortable: true },
   { name: 'Email', ref: 'email', sortable: true },
+  {
+    name: 'Actions',
+    ref: 'actions',
+    component: TestTemplateComponent,
+    componentData: { buttonText: 'Click Me', icon: 'edit' },
+  },
 ];
 
 const STATIC_DATA_SOURCE = [
@@ -85,4 +91,8 @@ export class AppComponent {
     this.#fakePaginationDataService.getData(params);
   protected columns = COLUMNS;
   protected staticDataSource = STATIC_DATA_SOURCE;
+
+  protected onClick(row: any): void {
+    console.log('Row clicked:', row);
+  }
 }

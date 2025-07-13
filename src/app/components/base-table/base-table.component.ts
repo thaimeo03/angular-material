@@ -2,16 +2,20 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ComponentRef,
   DestroyRef,
   inject,
   input,
   OnChanges,
+  OnDestroy,
   OnInit,
   output,
+  QueryList,
   signal,
   SimpleChanges,
   Type,
   ViewChild,
+  ViewChildren,
   ViewContainerRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -27,7 +31,8 @@ import { debounceTime, Observable, of, Subject, switchMap } from 'rxjs';
 export interface ITableColumn {
   name: string;
   ref: string;
-  component?: Type<any>;
+  component?: Type<any>; // Dynamic component to render in the cell
+  componentData?: { [key: string]: any }; // Data to pass to dynamic component
   sortable?: boolean;
   width?: string;
 }
@@ -39,7 +44,9 @@ export interface ITableColumn {
   styleUrl: './base-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
+export class BaseTableComponent
+  implements OnInit, OnChanges, AfterViewInit, OnDestroy
+{
   // Dependencies
   #destroyRef = inject(DestroyRef);
 
@@ -49,6 +56,8 @@ export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
   private readonly DEFAULT_LENGTH = 0;
   private readonly DEFAULT_PAGE_OPTIONS = [5, 10, 20];
   private readonly DEFAULT_DEBOUNCE_TIME = 150;
+  private readonly COLUMN_DATA_PROPERTY = 'columnData'; // Property name for column data in dynamic components
+  private readonly ROW_DATA_PROPERTY = 'rowData'; // Property name for row data in dynamic components
 
   // Inputs
   defColumns = input.required<ITableColumn[]>();
@@ -69,11 +78,12 @@ export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
   // Properties
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild('dynamicComponentContainer', { read: ViewContainerRef })
-  private container!: ViewContainerRef;
+  @ViewChildren('dynamicComponentContainer', { read: ViewContainerRef }) // QueryList for dynamic components
+  dynamicContainers!: QueryList<ViewContainerRef>;
 
   private pageChange$ = new Subject<any>();
   private debounceClick$ = new Subject<() => void>();
+  private componentRefs: ComponentRef<any>[] = []; // Store dynamic component references
 
   protected dataSource = new MatTableDataSource();
   protected pageSize = signal(this.DEFAULT_PAGE_SIZE);
@@ -97,6 +107,27 @@ export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
     if (this.staticDataSource().length > 0) {
       this.dataSource.paginator = this.paginator;
     }
+
+    // Initialize dynamic components
+    this.initDynamicComponents();
+
+    // Listen for data changes to reinitialize dynamic components
+    this.dataSource
+      .connect()
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe(() => {
+        setTimeout(() => this.initDynamicComponents(), 0);
+      });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up dynamic component references
+    this.componentRefs.forEach((ref) => {
+      if (ref && !ref.hostView.destroyed) {
+        ref.destroy();
+      }
+    });
+    this.componentRefs = [];
   }
 
   // Handlers
@@ -169,15 +200,79 @@ export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
   protected onClick(row: any) {
     if (!this.clickable()) return;
 
-    this.debounceClick$.next(() => {
-      this.clickEvent.emit(row);
+    this.clickEvent.emit(row);
+  }
+
+  private initDynamicComponents(): void {
+    // Clear existing component references
+    this.componentRefs.forEach((ref) => {
+      if (ref && !ref.hostView.destroyed) {
+        ref.destroy();
+      }
+    });
+    this.componentRefs = [];
+
+    if (!this.dynamicContainers) return;
+
+    // Get current data
+    const currentData = this.dataSource.data;
+    const containers = this.dynamicContainers.toArray();
+    const columnsWithComponents = this.defColumns().filter(
+      (col) => col.component,
+    );
+
+    containers.forEach((container, index) => {
+      const rowIndex = Math.floor(index / columnsWithComponents.length);
+      const columnIndex = index % columnsWithComponents.length;
+
+      if (
+        rowIndex < currentData.length &&
+        columnIndex < columnsWithComponents.length
+      ) {
+        const column = columnsWithComponents[columnIndex];
+        const rowData = currentData[rowIndex];
+
+        this.createDynamicComponent(
+          container,
+          column.component!,
+          column.componentData,
+          rowData,
+        );
+      }
     });
   }
 
-  protected createDynamicComponent(component: Type<any>) {
-    if (this.container) {
-      this.container.createComponent(component);
+  protected createDynamicComponent(
+    container: ViewContainerRef,
+    component: Type<any>,
+    data?: any,
+    rowData?: any,
+  ) {
+    if (!container || !component) return;
+
+    container.clear();
+    const componentRef = container.createComponent(component);
+
+    // Pass data to the component if it has these properties
+    if (
+      data &&
+      componentRef.instance &&
+      this.COLUMN_DATA_PROPERTY in componentRef.instance
+    ) {
+      componentRef.instance[this.COLUMN_DATA_PROPERTY] = data;
     }
+
+    // Pass the current row element if the component expects it
+    if (
+      rowData &&
+      componentRef.instance &&
+      this.ROW_DATA_PROPERTY in componentRef.instance
+    ) {
+      componentRef.instance[this.ROW_DATA_PROPERTY] = rowData;
+    }
+
+    this.componentRefs.push(componentRef);
+    componentRef.changeDetectorRef.detectChanges();
   }
 
   // Getters

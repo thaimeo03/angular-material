@@ -1,6 +1,16 @@
 <button mat-raised-button (click)="openDialog()">
   Open dialog without animation
 </button>
-<app-base-table [defColumns]="columns" [api]="api">
-  <div filter style="color: blue">Filter</div>
+<app-base-table
+  [defColumns]="columns"
+  [api]="api"
+  [clickable]="true"
+  (onClick)="onClick($event)"
+>
+  <div
+    extend
+    style="color: var(--mat-sys-error); font: var(--mat-sys-title-large)"
+  >
+    Filter
+  </div>
 </app-base-table>
