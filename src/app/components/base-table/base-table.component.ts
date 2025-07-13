@@ -1,16 +1,35 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, inject, input, OnChanges, OnInit, output, signal, SimpleChanges, Type, ViewChild, ViewContainerRef } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  OnChanges,
+  OnInit,
+  output,
+  signal,
+  SimpleChanges,
+  Type,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import {
+  MatPaginator,
+  MatPaginatorModule,
+  PageEvent,
+} from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { debounceTime, Observable, of, Subject, switchMap } from 'rxjs';
 
 export interface ITableColumn {
-  name: string
-  ref: string
+  name: string;
+  ref: string;
   component?: Type<any>;
-  sortable?: boolean
-  width?: string
+  sortable?: boolean;
+  width?: string;
 }
 
 @Component({
@@ -22,20 +41,20 @@ export interface ITableColumn {
 })
 export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
   // Dependencies
-  #destroyRef = inject(DestroyRef)
+  #destroyRef = inject(DestroyRef);
 
   // Constants
-  private readonly DEFAULT_CUR_PAGE = 1
-  private readonly DEFAULT_PAGE_SIZE = 10
-  private readonly DEFAULT_LENGTH = 0
-  private readonly DEFAULT_PAGE_OPTIONS = [5, 10, 20]
-  private readonly DEFAULT_DEBOUNCE_TIME = 150
+  private readonly DEFAULT_CUR_PAGE = 1;
+  private readonly DEFAULT_PAGE_SIZE = 10;
+  private readonly DEFAULT_LENGTH = 0;
+  private readonly DEFAULT_PAGE_OPTIONS = [5, 10, 20];
+  private readonly DEFAULT_DEBOUNCE_TIME = 150;
 
   // Inputs
   defColumns = input.required<ITableColumn[]>();
   pageSizeOptions = input<number[]>(this.DEFAULT_PAGE_OPTIONS);
-  params = input<any>({page: this.DEFAULT_CUR_PAGE});
-  api = input<(((params: any) => Observable<any>) | null)>(null);
+  params = input<any>({ page: this.DEFAULT_CUR_PAGE });
+  api = input<((params: any) => Observable<any>) | null>(null);
   staticDataSource = input<any[]>([]);
   enablePagination = input(true);
   showOrderColumn = input(true);
@@ -45,7 +64,7 @@ export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
   disabled = input(false);
 
   // Outputs
-  clickEvent = output<any>({ alias: "onClick" });
+  clickEvent = output<any>({ alias: 'onClick' });
 
   // Properties
   @ViewChild(MatSort) sort!: MatSort;
@@ -68,82 +87,87 @@ export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if(changes['params']) {
+    if (changes['params']) {
       this.pageChange$.next(this.params);
     }
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.sort = this.sort
-    if(this.staticDataSource().length > 0) {
-      this.dataSource.paginator = this.paginator
+    this.dataSource.sort = this.sort;
+    if (this.staticDataSource().length > 0) {
+      this.dataSource.paginator = this.paginator;
     }
   }
 
   // Handlers
   private addNumberOrderColumn() {
-    if(this.showOrderColumn()) {
+    if (this.showOrderColumn()) {
       const firstColumn = this.defColumns()[0];
-      if(firstColumn.ref !== 'no') {
+      if (firstColumn.ref !== 'no') {
         this.defColumns().unshift({
           name: '#',
           ref: 'no',
-          sortable: false
-        })
+          sortable: false,
+        });
       }
     }
-
   }
 
   private initDataSource() {
-    if(this.staticDataSource().length > 0) {
-      this.dataSource.data = this.staticDataSource().map((item: any, index: number) => ({ ...item, no: index + 1 }));
+    if (this.staticDataSource().length > 0) {
+      this.dataSource.data = this.staticDataSource().map(
+        (item: any, index: number) => ({ ...item, no: index + 1 }),
+      );
       return;
     }
 
     // Fetch data
-    this.pageChange$.pipe(
-      switchMap((params) => {
-        const api$ = this.api();
-        if(api$ === null) return of(null);
-        return api$(params);
-      }),
-      takeUntilDestroyed(this.#destroyRef),
-    ).subscribe(res => {
-      if(!res) return
+    this.pageChange$
+      .pipe(
+        switchMap((params) => {
+          const api$ = this.api();
+          if (api$ === null) return of(null);
+          return api$(params);
+        }),
+        takeUntilDestroyed(this.#destroyRef),
+      )
+      .subscribe((res) => {
+        if (!res) return;
 
-      const { limit, totalElements, currentPage } = res.pagination;;
-      // Set data and add number order
-      this.dataSource.data = res.data.map(
-        (item: any, index: number) =>
-        ({ ...item, no: (currentPage - 1) * limit + index + 1 })
-      );
+        const { limit, totalElements, currentPage } = res.pagination;
+        // Set data and add number order
+        this.dataSource.data = res.data.map((item: any, index: number) => ({
+          ...item,
+          no: (currentPage - 1) * limit + index + 1,
+        }));
 
-      this.length.set(totalElements);
-    })
+        this.length.set(totalElements);
+      });
 
     // Init data
     this.pageChange$.next(this.params);
   }
 
   private debounceClick() {
-    this.debounceClick$.pipe(
-      debounceTime(this.DEFAULT_DEBOUNCE_TIME),
-      takeUntilDestroyed(this.#destroyRef)
-    ).subscribe(fn => {
-      fn();
-    });
+    this.debounceClick$
+      .pipe(
+        debounceTime(this.DEFAULT_DEBOUNCE_TIME),
+        takeUntilDestroyed(this.#destroyRef),
+      )
+      .subscribe((fn) => {
+        fn();
+      });
   }
 
   protected onPageChange(e: PageEvent) {
     this.debounceClick$.next(() => {
-      this.pageChange$.next({page: e.pageIndex + 1});
+      this.pageChange$.next({ page: e.pageIndex + 1 });
       this.pageSize.set(e.pageSize);
     });
   }
 
   protected onClick(row: any) {
-    if(!this.clickable()) return
+    if (!this.clickable()) return;
 
     this.debounceClick$.next(() => {
       this.clickEvent.emit(row);
@@ -151,18 +175,18 @@ export class BaseTableComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   protected createDynamicComponent(component: Type<any>) {
-    if(this.container) {
+    if (this.container) {
       this.container.createComponent(component);
     }
   }
 
   // Getters
   protected get columnRef() {
-    return this.defColumns().map(item => item.ref);
+    return this.defColumns().map((item) => item.ref);
   }
 
   protected getColumnWidth(item: ITableColumn) {
-    if(item.ref === 'no') {
+    if (item.ref === 'no') {
       return '4rem';
     }
     return item.width;

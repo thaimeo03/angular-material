@@ -1,19 +1,28 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, inject, signal, Type, ViewChild, ViewContainerRef } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  Type,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
   MatDialogClose,
   MatDialogContent,
-  MatDialogTitle
+  MatDialogTitle,
 } from '@angular/material/dialog';
 
 export enum DialogType {
   CONFIRM = 'confirm',
   ALERT = 'alert',
   FORM = 'form',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 interface IDialogInfo {
@@ -23,13 +32,13 @@ interface IDialogInfo {
 }
 
 type TDefaultDialogInfo = {
-  [K in DialogType]: IDialogInfo
-}
+  [K in DialogType]: IDialogInfo;
+};
 
 export interface IDialogDataConfig {
   enableCloseButton?: boolean;
   title?: string;
-  type?: DialogType
+  type?: DialogType;
   component?: Type<any>;
   description?: string;
 }
@@ -60,25 +69,28 @@ export class BaseDialogComponent implements AfterViewInit {
     alert: {
       title: 'Alert title',
       description: 'Alert description',
-      enableCloseButton: false
+      enableCloseButton: false,
     },
     confirm: {
       title: 'Confirm title',
       description: 'Confirm description',
-      enableCloseButton: true
+      enableCloseButton: true,
     },
     form: {
       title: 'Form title',
       description: 'Form description',
-      enableCloseButton: true
+      enableCloseButton: true,
     },
-    custom: {
-    }
-  }
+    custom: {},
+  };
 
   protected readonly DialogType = DialogType;
-  protected currentType = signal<DialogType>(this.data?.type ?? DialogType.CONFIRM);
-  protected dialogInfo = signal<IDialogInfo>(this.defaultDialogInfo[this.currentType()]);
+  protected currentType = signal<DialogType>(
+    this.data?.type ?? DialogType.CONFIRM,
+  );
+  protected dialogInfo = signal<IDialogInfo>(
+    this.defaultDialogInfo[this.currentType()],
+  );
 
   // Lifecycle
   constructor() {
@@ -87,23 +99,29 @@ export class BaseDialogComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     // Dynamic component with only dialog type FORM or CUSTOM
-    if(this.container && this.data?.component) {
+    if (this.container && this.data?.component) {
       this.container.createComponent(this.data.component);
     }
   }
 
   // Handlers
   private initCurrentInfo() {
-    if(this.data?.title !== undefined) {
+    if (this.data?.title !== undefined) {
       this.dialogInfo.set({ ...this.dialogInfo(), title: this.data.title });
     }
 
-    if(this.data?.description !== undefined) {
-      this.dialogInfo.set({ ...this.dialogInfo(), description: this.data.description });
+    if (this.data?.description !== undefined) {
+      this.dialogInfo.set({
+        ...this.dialogInfo(),
+        description: this.data.description,
+      });
     }
 
-    if(this.data?.enableCloseButton !== undefined) {
-      this.dialogInfo.set({ ...this.dialogInfo(), enableCloseButton: this.data.enableCloseButton });
+    if (this.data?.enableCloseButton !== undefined) {
+      this.dialogInfo.set({
+        ...this.dialogInfo(),
+        enableCloseButton: this.data.enableCloseButton,
+      });
     }
   }
 }

@@ -3,14 +3,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { DialogType } from './components/base-dialog/base-dialog.component';
 import { BaseDialogService } from './components/base-dialog/base-dialog.service';
-import { BaseTableComponent, ITableColumn } from "./components/base-table/base-table.component";
+import {
+  BaseTableComponent,
+  ITableColumn,
+} from './components/base-table/base-table.component';
 import { TestTemplateComponent } from './components/test-template/test-template.component';
 import { FakePaginationDataService } from './services/fake-pagination-data.service';
 
 const COLUMNS: ITableColumn[] = [
-  {name: 'ID', ref: 'id', width: '4rem'},
-  {name: 'Name', ref: 'name', sortable: true},
-  {name: 'Email', ref: 'email', sortable: true},
+  { name: 'ID', ref: 'id', width: '4rem' },
+  { name: 'Name', ref: 'name', sortable: true },
+  { name: 'Email', ref: 'email', sortable: true },
 ];
 
 const STATIC_DATA_SOURCE = [
@@ -43,8 +46,8 @@ const STATIC_DATA_SOURCE = [
   { id: 27, name: 'User 27', email: 'user27@example.com' },
   { id: 28, name: 'User 28', email: 'user28@example.com' },
   { id: 29, name: 'User 29', email: 'user29@example.com' },
-  { id: 30, name: 'User 30', email: 'user30@example.com' }
-]
+  { id: 30, name: 'User 30', email: 'user30@example.com' },
+];
 
 @Component({
   selector: 'app-root',
@@ -61,23 +64,25 @@ export class AppComponent {
       data: {
         type: DialogType.FORM,
         component: TestTemplateComponent,
-        enableCloseButton: true
-      }
+        enableCloseButton: true,
+      },
     });
 
-    dialogRef.afterClosed()
-    .pipe(takeUntilDestroyed(this.#destroyRef))
-    .subscribe(res => {
-      if(res) {
-        console.log('Ok');
-      }
-    })
+    dialogRef
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe((res) => {
+        if (res) {
+          console.log('Ok');
+        }
+      });
   }
 
   // Use for table testing
   #fakePaginationDataService = inject(FakePaginationDataService);
 
-  protected api = (params: {page: number}) => this.#fakePaginationDataService.getData(params);
+  protected api = (params: { page: number }) =>
+    this.#fakePaginationDataService.getData(params);
   protected columns = COLUMNS;
   protected staticDataSource = STATIC_DATA_SOURCE;
 }

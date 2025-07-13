@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FakePaginationDataService {
   private readonly DATA_PAGE_1 = {
@@ -16,14 +16,14 @@ export class FakePaginationDataService {
       { id: 7, name: 'User 7', email: 'user7@example.com' },
       { id: 8, name: 'User 8', email: 'user8@example.com' },
       { id: 9, name: 'User 9', email: 'user9@example.com' },
-      { id: 10, name: 'User 10', email: 'user10@example.com' }
+      { id: 10, name: 'User 10', email: 'user10@example.com' },
     ],
     pagination: {
       limit: 10,
       currentPage: 1,
       totalPage: 3,
-      totalElements: 30
-    }
+      totalElements: 30,
+    },
   };
   private readonly DATA_PAGE_2 = {
     data: [
@@ -36,14 +36,14 @@ export class FakePaginationDataService {
       { id: 17, name: 'User 17', email: 'user17@example.com' },
       { id: 18, name: 'User 18', email: 'user18@example.com' },
       { id: 19, name: 'User 19', email: 'user19@example.com' },
-      { id: 20, name: 'User 20', email: 'user20@example.com' }
+      { id: 20, name: 'User 20', email: 'user20@example.com' },
     ],
     pagination: {
       limit: 10,
       currentPage: 2,
       totalPage: 3,
-      totalElements: 30
-    }
+      totalElements: 30,
+    },
   };
   private readonly DATA_PAGE_3 = {
     data: [
@@ -56,20 +56,20 @@ export class FakePaginationDataService {
       { id: 27, name: 'User 27', email: 'user27@example.com' },
       { id: 28, name: 'User 28', email: 'user28@example.com' },
       { id: 29, name: 'User 29', email: 'user29@example.com' },
-      { id: 30, name: 'User 30', email: 'user30@example.com' }
+      { id: 30, name: 'User 30', email: 'user30@example.com' },
     ],
     pagination: {
       limit: 10,
       currentPage: 3,
       totalPage: 3,
-      totalElements: 30
-    }
+      totalElements: 30,
+    },
   };
 
-  getData({page}: {page: number}) {
-    if(page === 1) return of(this.DATA_PAGE_1);
-    if(page === 2) return of(this.DATA_PAGE_2);
-    if(page === 3) return of(this.DATA_PAGE_3);
+  getData({ page }: { page: number }) {
+    if (page === 1) return of(this.DATA_PAGE_1);
+    if (page === 2) return of(this.DATA_PAGE_2);
+    if (page === 3) return of(this.DATA_PAGE_3);
 
     return of(this.DATA_PAGE_1);
   }

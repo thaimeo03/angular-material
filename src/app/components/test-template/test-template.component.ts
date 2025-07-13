@@ -12,4 +12,4 @@ export class TestTemplateComponent {
   protected onClick() {
     console.log('Click');
   }
- }
+}
