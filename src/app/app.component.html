@@ -1,6 +1,13 @@
+<mat-toolbar color="primary">
+  <span>Angular Material Demo</span>
+  <span class="spacer"></span>
+  <app-theme-toggle></app-theme-toggle>
+</mat-toolbar>
+
 <button mat-raised-button (click)="openDialog()">
   Open dialog without animation
 </button>
+
 <app-base-table
   [defColumns]="columns"
   [api]="api"

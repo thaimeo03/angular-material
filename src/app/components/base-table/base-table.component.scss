@@ -2,6 +2,6 @@
   cursor: pointer;
 
   &:hover {
-    background-color: #f7dce1;
+    background-color: var(--mat-sys-primary-container);
   }
 }

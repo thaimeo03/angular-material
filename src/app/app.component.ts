@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { DialogType } from './components/base-dialog/base-dialog.component';
 import { BaseDialogService } from './components/base-dialog/base-dialog.service';
 import {
@@ -8,6 +9,7 @@ import {
   ITableColumn,
 } from './components/base-table/base-table.component';
 import { TestTemplateComponent } from './components/test-template/test-template.component';
+import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
 import { FakePaginationDataService } from './services/fake-pagination-data.service';
 
 const COLUMNS: ITableColumn[] = [
@@ -57,7 +59,12 @@ const STATIC_DATA_SOURCE = [
 
 @Component({
   selector: 'app-root',
-  imports: [MatButtonModule, BaseTableComponent],
+  imports: [
+    MatButtonModule,
+    MatToolbarModule,
+    BaseTableComponent,
+    ThemeToggleComponent,
+  ],
   templateUrl: './app.component.html',
 })
 export class AppComponent {
