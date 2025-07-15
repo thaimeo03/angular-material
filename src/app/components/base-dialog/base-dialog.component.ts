@@ -25,14 +25,8 @@ export enum DialogType {
   CUSTOM = 'custom',
 }
 
-interface IDialogInfo {
-  title?: string;
-  description?: string;
-  enableCloseButton?: boolean;
-}
-
 type TDefaultDialogInfo = {
-  [K in DialogType]: IDialogInfo;
+  [K in DialogType]: IDialogDataConfig;
 };
 
 export interface IDialogDataConfig {
@@ -88,7 +82,7 @@ export class BaseDialogComponent implements AfterViewInit {
   protected currentType = signal<DialogType>(
     this.data?.type ?? DialogType.CONFIRM,
   );
-  protected dialogInfo = signal<IDialogInfo>(
+  protected dialogInfo = signal<IDialogDataConfig>(
     this.defaultDialogInfo[this.currentType()],
   );
 
